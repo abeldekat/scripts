@@ -1,0 +1,55 @@
+#!/bin/bash
+
+_target="$HOME/.config/nvim/lua/misc/colorscheme.lua"
+
+_a_file() {
+	_new_theme="$1"
+	_vim
+}
+
+_dark_colors() {
+	_new_theme="$(_names | sort -z | _dmenu)"
+	if [ "$?" = 0 ]; then
+		_vim
+		sed -i 's/local prefer_light =.*/local prefer_light = false/' "$_target"
+	fi
+}
+
+_light_colors() {
+	_new_theme="$(_names | sort -z | _dmenu)"
+	if [ "$?" = 0 ]; then
+		_vim
+		sed -i 's/local prefer_light =.*/local prefer_light = true/' "$_target"
+	fi
+}
+
+_vim() {
+	if [ -f "$_target" ]; then
+		sed -i "s/local color.*$/local color = '$_new_theme'/" "$_target"
+	fi
+}
+
+_dmenu() {
+	dmenu -g 2 -l 20 -p "Select vim theme ($_active_theme)"
+}
+
+_names() {
+	_source="$HOME/.config/nvim/lua/colors"
+	find "$_source" -maxdepth 1 -type f -name "*.lua" -printf '%f\n' | cut -d. -f1 | grep -v "init"
+}
+
+_find_active_theme() {
+	grep -E "local color.*$" "$_target" | sed -r -e "s/(^local color = ')([^'].*)('$)/\2/"
+}
+
+_active_theme="$(_find_active_theme)"
+_new_theme=_active_theme
+while getopts "hldf:" o; do
+	case "${o}" in
+	h) printf 'l is light theme, d is darktheme, f is a literal...' && exit ;;
+	l) _light_colors ;;
+	d) _dark_colors ;;
+	f) _a_file "$OPTARG" ;;
+	*) printf "Invalid option: -%s\\n" "$OPTARG" && exit ;;
+	esac
+done
