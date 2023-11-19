@@ -1,6 +1,11 @@
 #!/bin/bash
 
-_target="$HOME/.config/nvim/lua/misc/colorscheme.lua"
+_target="$HOME/.config/nvim/lua/misc/color.lua"
+
+_dmenu() {
+	# dmenu -g 2 -- grid patch
+	dmenu -i -l 20 -p "Select vim theme ($_active_theme)"
+}
 
 _a_file() {
 	_new_theme="$1"
@@ -16,11 +21,9 @@ _dark_colors() {
 }
 
 _light_colors() {
-	# _new_theme="$(_names | grep "light" | sort -z |  _dmenu)"
 	_new_theme="$(_names | sort -z | _dmenu)"
 	if [ "$?" = 0 ]; then
 		_vim
-		# sed -i 's/local active_background =.*/local active_background = "light"/' "$_background"
 		sed -i 's/local prefer_light =.*/local prefer_light = true/' "$_target"
 	fi
 }
@@ -29,10 +32,6 @@ _vim() {
 	if [ -f "$_target" ]; then
 		sed -i "s/local color.*$/local color = '$_new_theme'/" "$_target"
 	fi
-}
-
-_dmenu() {
-	dmenu -g 2 -l 20 -p "Select vim theme ($_active_theme)"
 }
 
 _names() {
