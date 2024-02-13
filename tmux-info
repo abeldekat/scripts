@@ -1,0 +1,9 @@
+#! /bin/bash
+
+show(){
+  tmux list-sessions | grep "$(tmux display-message -p '#S')" | cut -d'(' -f1
+  tmux list-windows | grep "active" | cut -d ')' -f1 | sed 's/(//'
+}
+
+[[ -z "$TMUX" ]] && echo "Not in tmux session..." && exit;
+show

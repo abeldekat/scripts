@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+# Switch session fuzzy
+# bind C-j split-window -v "tmux list-sessions -F '#{session_activity}:#{session_name}' \
+# | sort -nr \
+# | cut -d ':' -f 2 \
+# | grep -v \"^$(tmux display-message -p '#S')\$\" \
+# | fzf --reverse \
+# | xargs tmux switch-client -t"
+_find() {
+	tmux list-sessions -F '#{session_activity}:#{session_name}' |
+		sort -nr |
+		cut -d ':' -f 2 |
+		grep -v "^$(tmux display-message -p '#S')\$"
+}
+
+if [[ $# -eq 1 ]]; then
+	selected=$1
+else
+	selected=$(_find | fzf --reverse)
+fi
+
+if [[ -z $selected ]]; then
+	exit 0
+fi
+
+tmux switch-client -t "$selected"
