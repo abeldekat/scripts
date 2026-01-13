@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+kitty_path=~/.config/kitty
+kitty_themes="$kitty_path"/themes
+kitty_current="$kitty_path"/current-theme.conf
+kitty_conf="$kitty_path"/kitty.conf
+
+use_dmenu() {
+  local current_theme
+  if [[ -f "$kitty_current" ]]; then
+    current_theme="$(sed -n '$p' $kitty_current | cut -d'#' -f2)"
+  fi
+  dmenu -i -l 20 -p "Select kitty ($current_theme):"
+}
+
+select_theme() {
+  find "$kitty_themes" -type f -printf "%f\n" |
+    sort -d -f |
+    use_dmenu
+}
+
+selected="$(select_theme)"
+use_this=$(basename "$selected" ".conf")
+[[ -n "$use_this" ]] &&
+  kitty +kitten themes --reload-in=all --cache-age=360 "$use_this" &&
+  sed -i -e "2d" "$kitty_conf" &&
+  echo "#$use_this" >>"$kitty_current"

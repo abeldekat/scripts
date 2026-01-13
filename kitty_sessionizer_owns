@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+# https://github.com/kovidgoyal/kitty/issues/9356
+# https://github.com/LazyStability/kitty-sessionizer
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/kitty"
+SESSION_DIR="$CONFIG_DIR/sessions"
+SESSIONIZED_DIR="$CONFIG_DIR/sessions_sessionized"
+
+_find() {
+  find "$SESSION_DIR" -name "*.kitty-session"
+  find \
+    ~/projects/plugins \
+    ~/projects/rust \
+    ~/projects/docs \
+    ~/localbuilds \
+    ~/.config \
+    ~/bin \
+    ~/git \
+    ~/inspiration/vim \
+    -mindepth 1 -maxdepth 1 -type d
+}
+
+sessionize() {
+  cat "$CONFIG_DIR"/default.kitty-session >"$session_file"
+  sed -i s#@@session-path@@#"$selected"# "$session_file"
+  sed -i s#@@session@@#"$session"# "$session_file"
+}
+
+# a custom session file or the cwd in the session
+selected="$(_find | fzf --reverse)"
+
+if [[ $(echo "$selected" | grep -c "kitty-session") -gt 0 ]]; then
+  kitten @ action goto_session "$selected"
+  exit 0
+fi
+
+[[ ! -d "$SESSIONIZED_DIR" ]] && mkdir -p "$SESSIONIZED_DIR"
+
+# the last part of the dir will become the name of the session
+session="$(basename "$selected")"
+# the file with instructions for the session
+session_file="$SESSIONIZED_DIR/$session.kitty-session"
+
+[[ ! -f "$session_file" ]] && sessionize
+
+kitten @ action goto_session "$session_file"

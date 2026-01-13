@@ -5,29 +5,20 @@ alacritty_colors="$alacritty_path"/colors
 alacritty_target="$alacritty_path"/colors.toml
 
 use_dmenu() {
-	local current_theme
-	if [[ -f "$alacritty_target" ]]; then
-		current_theme="$(sed -n '$p' $alacritty_target | cut -d'#' -f2 | cut -d'.' -f1)"
-	fi
-	dmenu -i -l 20 -p "Select alacritty ($current_theme):"
+  local current_theme
+  if [[ -f "$alacritty_target" ]]; then
+    current_theme="$(sed -n '$p' $alacritty_target | cut -d'#' -f2 | cut -d'.' -f1)"
+  fi
+  dmenu -i -l 20 -p "Select alacritty ($current_theme):"
 }
 
-filter_light_or_dark() {
-	if [[ "light" == "$use_light" ]]; then
-		grep "_light"
-	else
-		grep -v "_light"
-	fi
-}
 select_theme() {
-	find "$alacritty_colors" -type f -printf "%f\n" |
-		filter_light_or_dark |
-		sort -d -f |
-		use_dmenu
+  find "$alacritty_colors" -type f -printf "%f\n" |
+    sort -d -f |
+    use_dmenu
 }
 
-use_light="$1"
 use_this="$(select_theme)"
 [[ -n "$use_this" ]] &&
-	cat "$alacritty_colors"/"$use_this" >"$alacritty_target" &&
-	echo "#$use_this" >>"$alacritty_target"
+  cat "$alacritty_colors"/"$use_this" >"$alacritty_target" &&
+  echo "#$use_this" >>"$alacritty_target"
