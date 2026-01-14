@@ -28,6 +28,7 @@ sessionize() {
 
 # a custom session file or the cwd in the session
 selected="$(_find | fzf --reverse)"
+[[ -z "$selected" ]] && exit 0
 
 if [[ $(echo "$selected" | grep -c "kitty-session") -gt 0 ]]; then
   kitten @ action goto_session "$selected"
